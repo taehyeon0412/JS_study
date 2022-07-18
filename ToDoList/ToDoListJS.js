@@ -1,54 +1,56 @@
-const todoForm = document.querySelector("#todo-form");
+const todoForm = document.querySelector(".todo-form");
 const todoInput = todoForm.querySelector("input");
-const todoList = document.querySelector("#todo-list");
+const todoListUl = document.querySelector(".todolist-ul");
 
 let toDos = [];
-
 const TODOS_KEY = "toDos";
+//로컬 스토리지에 들어갈 키 이름
 
-function saveToDos_ft() {
+function deleteToDoList(deleteEvent) {
+  const li = deleteEvent.target.parentElement;
+  li.remove();
+  toDos = toDos.filter((todo) => todo.id !== parseInt(li.id));
+  localSaveToDos();
+}
+
+function createToDo(newToDo) {
+  const li = document.createElement("li");
+  li.id = newToDo.id;
+  const span = document.createElement("span");
+  const button = document.createElement("button");
+  span.innerText = newToDo.text;
+  button.innerText = "×";
+  button.addEventListener("click", deleteToDoList);
+  li.appendChild(span);
+  li.appendChild(button);
+  todoListUl.appendChild(li);
+}
+
+function localSaveToDos() {
   localStorage.setItem(TODOS_KEY, JSON.stringify(toDos));
 }
 
-function deleteToDo(deleteToDo) {
-  const li = deleteToDo.target.parentElement;
-  li.remove();
-  toDos = toDos.filter((toDo) => toDo.id !== parseInt(li.id));
-  saveToDos_ft();
-}
-
-function createToDo(newTodo) {
-  const li = document.createElement("li");
-  li.id = newTodo.id;
-  const span = document.createElement("span");
-  span.innerText = newTodo.text;
-  const button = document.createElement("button");
-  button.addEventListener("click", deleteToDo);
-  li.appendChild(span);
-  li.appendChild(button);
-  todoList.appendChild(li);
-}
-
-function ToDoSubmit(submitEvent) {
+function submitToDo(submitEvent) {
   submitEvent.preventDefault();
-  const newTodo = todoInput.value;
+  const inputValue = todoInput.value;
   todoInput.value = "";
-  const newTodoOBJ = {
-    text: newTodo,
+  const newToDoOBJ = {
+    text: inputValue,
     id: Date.now(),
   };
-
-  toDos.push(newTodoOBJ);
-  createToDo(newTodoOBJ);
-  saveToDos_ft();
+  toDos.push(newToDoOBJ);
+  createToDo(newToDoOBJ);
+  localSaveToDos();
 }
 
-todoForm.addEventListener("submit", ToDoSubmit);
+todoForm.addEventListener("submit", submitToDo);
 
 const savedToDos = localStorage.getItem(TODOS_KEY);
 
 if (savedToDos !== null) {
-  const parsedToDos = JSON.parse(savedToDos);
-  toDos = parsedToDos;
-  parsedToDos.forEach(createToDo);
+  const parseToDos = JSON.parse(savedToDos);
+  toDos = parseToDos;
+  parseToDos.forEach(createToDo);
+  //parseToDos를 createToDo의 매개변수로 넣고 처음부터 끝까지 돌려준다
+  //parseToDos에 들어있는 배열값만큼 createToDo함수가 작동된다.
 }
